@@ -52,8 +52,8 @@ class Motor{
 
     static void move(uint16_t leftDuty,uint16_t rightDuty){
         P3->OUT |= 0xC0;
-        TIMER_A0->CCR[3] = uint16_t leftDuty;
-        TIMER_A0->CCR[3] = uint16_t rightDuty;
+        TIMER_A0->CCR[3] = leftDuty;
+        TIMER_A0->CCR[4] = rightDuty;
     }
 
     static void left_forward(){

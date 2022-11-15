@@ -10,6 +10,7 @@
 #include "Clock.h"
 #include "IR_sensor.h"
 #include "motor.h"
+#include "interrupt.h"
 #include <iostream>
 
 
@@ -17,11 +18,6 @@ void task(){
     printf("interrupt occurs!\n");
 }
 
-void TA2_0_IRQHandler(void){
-    TIMER_A2->CCTL[0] &= ~0x0001;
-
-    (*TimerA2Task)();
-}
 
 void main(void)
 {
@@ -43,7 +39,10 @@ void main(void)
     // create Motor_controller
     Motor Moter_control;
 
-    //TimerA2_Init(&task,50000);
+    // create interrupt_handler
+    Interrupt Interrupt_handler;
+    Interrupt_handler.TimerA2_Init(&task,50000);
+
 
     while(1){};
 }
