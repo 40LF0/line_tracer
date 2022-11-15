@@ -25,6 +25,7 @@ class Switch_control {
         // Now pull-up
         P1->OUT != 0x12;
     }
+
     static bool is_pressed(){
         if(P1->IN & 0x02 == 0){
             return true;
