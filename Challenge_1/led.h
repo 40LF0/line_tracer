@@ -20,7 +20,7 @@
 class LED {
     public:
 
-     void static LED_init(){
+    static void LED_init(){
          // Set P2 as GPIO
          P2->SEL0 &= ~0x07;
          P2->SEL1 &= ~0x07;
@@ -32,24 +32,24 @@ class LED {
          // Turn off LED
          P2->OUT &= ~0x07;
      }
-     void static turn_on_led(){
+    static void turn_on_led(){
          P2->OUT |= 0x07;
      }
-     void static turn_off_led(){
+    static void turn_off_led(){
          P2->OUT &= ~0x07;
      }
-     void static turn_on_led_color(int color){
+    static void turn_on_led_color(int color){
          P2->OUT &= ~0x07;
          P2->OUT |= color;
      }
 
-     void static turn_on_RED(){
+    static void turn_on_RED(){
          turn_on_led_color(LED_RED);
      }
-     void static turn_on_GREEN(){
+    static void turn_on_GREEN(){
          turn_on_led_color(LED_GREEN);
      }
-     void static turn_on_BLUE(){
+    static void turn_on_BLUE(){
          turn_on_led_color(LED_BLUE);
      }
 

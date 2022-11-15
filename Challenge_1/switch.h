@@ -12,7 +12,7 @@
 
 class Switch_control {
     public:
-    void static switch_control_init(){
+    static void switch_control_init(){
         // Setup switch as GPIO
         P1->SEL0 &= ~0x12;
         P1->SEL1 &= ~0x12;
@@ -25,7 +25,7 @@ class Switch_control {
         // Now pull-up
         P1->OUT != 0x12;
     }
-    bool static is_pressed(){
+    static bool is_pressed(){
         if(P1->IN & 0x02 == 0){
             return true;
         }
@@ -35,7 +35,7 @@ class Switch_control {
     }
 
     Switch_control(){
-        switch_init();
+        switch_control_init();
     }
 
 };

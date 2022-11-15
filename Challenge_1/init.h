@@ -25,42 +25,9 @@ void TimerA2_Init(void(*task)(void),uint16_t period){
 
 }
 
-void pwm_init34(uint16_t period,uint16_t duty3,uint16_t duty4){
-    TIMER_A0->CCR[0] = period;
 
-    TIMER_A0->EX0 = 0x0000;
 
-    TIMER_A0->CCTL[3] = 0x0040;
-    TIMER_A0->CCR[3] = duty3;
-    TIMER_A0->CCTL[4] = 0x0040;
-    TIMER_A0->CCR[4] = duty4;
 
-    TIMER_A0->CTL = 0x02F0;
-
-    P2->DIR |= 0xC0;
-    P2->SEL0 |= 0xC0;
-    P2->SEL1 &= ~0xC0;
-}
-
-void motor_init(void){
-    P3->SEL0 &= ~0xC0;
-    P3->SEL1 &= ~0xC0;
-    P3->DIR |= 0xC0;
-    P3->OUT &= ~0xC0;
-
-    P5->SEL0 &= ~0x30;
-    P5->SEL1 &= ~0x30;
-    P5->DIR |= 0x30;
-    P5->OUT &= ~0x30;
-
-    P2->SEL0 &= ~0xC0;
-    P2->SEL1 &= ~0xC0;
-    P2->DIR |= 0xC0;
-    P2->OUT &= ~0xC0;
-
-    pwm_init34(7500,0,0);
-
-}
 
 
 

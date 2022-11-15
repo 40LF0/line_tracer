@@ -4,11 +4,12 @@
  *  Created on: 2022. 11. 14.
  *      Author: Chung_Seung_Yeon
  */
-#include "init.h"
-#include "control.h"
+
 #include "led.h"
 #include "switch.h"
 #include "Clock.h"
+#include "IR_sensor.h"
+#include "motor.h"
 #include <iostream>
 
 
@@ -36,7 +37,11 @@ void main(void)
     // create switch controller
     Switch_control switch_control;
 
+    // create IR_sensor controller
+    IR_sensor IR_sensor_control;
 
+    // create Motor_controller
+    Motor Moter_control;
 
     //TimerA2_Init(&task,50000);
 
