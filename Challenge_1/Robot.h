@@ -11,6 +11,7 @@
 #include "control.h"
 #include "Clock.h"
 #include <iostream>
+#include <stdio.h>
 
 class Robot{
 private:

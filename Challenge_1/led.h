@@ -15,6 +15,7 @@
 
 
 #include "msp.h"
+#include <stdio.h>
 
 
 class LED {

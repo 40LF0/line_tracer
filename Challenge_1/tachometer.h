@@ -6,6 +6,7 @@
 #define TACHOMETER_H_
 
 #include "msp.h"
+#include <stdio.h>
 
 class TACHOMETER{
 private:

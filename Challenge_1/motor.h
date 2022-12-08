@@ -9,6 +9,7 @@
 #define MOTOR_H_
 
 #include "msp.h"
+#include <stdio.h>
 
 class Motor{
     public:
