@@ -4,7 +4,6 @@
  *  Created on: 2022. 11. 14.
  *      Author: Chung_Seung_Yeon
  */
-<<<<<<< HEAD
 
 /*#include "led.h"
 =======
@@ -21,10 +20,6 @@
 #include <iostream>*/
 
 #include "Robot.h"
-=======
->>>>>>> ea7ee10d954743caad2967801526b51f6bad428b
-
-
 
 std::function<void()> task = [](){
     printf("interrupt occurs!\n");

@@ -13,10 +13,7 @@
 #define LED_GREEN (LED_RED << 1)
 #define LED_BLUE (LED_RED << 2)
 
-
 #include "msp.h"
-#include <stdio.h>
-
 
 class LED {
     public:

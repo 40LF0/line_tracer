@@ -15,4 +15,5 @@ void Robot::release(){
 
 void Robot::Init(){
 	std::cout<<"Robot::Init()\n";
+	RSensor.IR_();
 }

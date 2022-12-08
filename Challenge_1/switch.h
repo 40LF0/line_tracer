@@ -9,7 +9,6 @@
 #define SWITCH_H_
 
 #include "msp.h"
-#include <stdio.h>
 
 class Switch_control {
     public:
