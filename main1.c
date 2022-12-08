@@ -329,15 +329,28 @@ void task(){
 	int k = 0;
 	for(k = 0; k < 8; ++k){
 		if(IRinfo[k] == 1){
-			DC_Motor_Interface(2, 0, 0);
-			DC_Motor_Interface(4, 0, 0);
-			DC_Motor_Interface(1, 1000, 1000);
-			return;
+			break;
 		}
 	}
-	DC_Motor_Interface(3, 0, 0);
-	DC_Motor_Interface(5, 0, 0);
-	DC_Motor_Interface(1, 1000, 1000);
+	int j = 0; 
+	for(j = k + 1; j < 8; ++j){
+		if(IRinfo[j] == 0){
+			break;
+		}
+	}
+	if(j == 0){
+		j = 8;	
+	}
+	if((j-k) >= 4){
+		//need to stop
+		DC_Motor_Interface(1, 0, 0);
+		return;
+	}
+	else{
+    int a = j- 4;
+		int b = k - 3;
+		DC_Motor_Interface(1, 1500 + 150*a, 1500 - 150*b);
+	}
 }
 
 void TimerA2_Init(void(*task)(void), uint16_t period){
@@ -463,7 +476,6 @@ void IR_sensor_discharge_time_table(){
 				int sensor = is_IR_sensor_discharge(j);
 				if(!sensor){
 					flag[j] = i;
-					printf("constant: %d\n" . i);
 					if(i < 700){
 						IRinfo[j] = 0; //white
 					}
