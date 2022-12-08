@@ -133,6 +133,7 @@ void InitF(){
 	motor_init();
 	IRsensor_init();
 
+	timer_A3_capture_init();
 	InitFlag=1;
 }
 
@@ -349,7 +350,16 @@ void testtestmove(){
 	  Clock_Delay1us(10);
 
 	  P7->DIR = 0x00;
+		printf("%d\n" , left_count);
 
+		DC_Motor_Interface(2, 500, 100);
+		DC_Motor_Interface(5, 500, 100);
+		DC_Motor_Interface(1, 400, 400);
+
+		if(left_count > 30){
+			DC_Motor_Interface(1, 0, 0);
+		}
+/*
     int i;
     for(i = 0; i < 10000; i++){
       sensor = P7->IN & 0x10;
@@ -358,13 +368,13 @@ void testtestmove(){
 	      break;
 	    }
 	    Clock_Delay1us(1);
-	  }
+	  } */
 		/*
 		//turn off sequence
 	  P5->OUT &= ~0x08;
 	  P9->OUT &= ~0x04;
 	  Clock_Delay1ms(10); */
-
+/*
 		if(i > 200){
 			DC_Motor_Interface(2, 0, 0);
 			DC_Motor_Interface(4, 0, 0);
@@ -376,7 +386,7 @@ void testtestmove(){
 			DC_Motor_Interface(5, 0, 0);
 			DC_Motor_Interface(1, 700, 700);
 			systick_wait1ms();
-		}
+		} */
 	}
 }
 
@@ -418,7 +428,4 @@ void main(void)
 {
 	InitF();
 	testtestmove();
-	while(1){
-		printf("%d\n" ,left_count);
-	}
 }	
