@@ -7,11 +7,14 @@
  * main.c
  */
 
+int IRinfo[8];
+
 int milisec;
 int sec;
 int InitFlag;
 int sensorVal;
 void (*TimerA2Task)(void);
+void task();
 
 uint16_t first_left;
 uint16_t first_right;
@@ -132,6 +135,7 @@ void InitF(){
 	systick_init();
 	motor_init();
 	IRsensor_init();
+  TimerA2_Init(task, 10000);
 
 	timer_A3_capture_init();
 	InitFlag=1;
@@ -320,12 +324,25 @@ void TA2_0_IRQHandler(){
 }
 
 void task(){
-	printf("void task()\ninterrupt occurred\n");
+//MOTOR WORK DONE HERE
+	//DC_Motor_Interface(, , ,);
+	int k = 0;
+	for(k = 0; k < 8; ++k){
+		if(IRinfo[k] == 1){
+			DC_Motor_Interface(2, 0, 0);
+			DC_Motor_Interface(4, 0, 0);
+			DC_Motor_Interface(1, 1000, 1000);
+			return;
+		}
+	}
+	DC_Motor_Interface(3, 0, 0);
+	DC_Motor_Interface(5, 0, 0);
+	DC_Motor_Interface(1, 1000, 1000);
 }
 
 void TimerA2_Init(void(*task)(void), uint16_t period){
 	TimerA2Task = task;
-	TIMER_A2->CTL = 0x280;
+	TIMER_A2->CTL = 0x0280;
 	TIMER_A2->CCTL[0] = 0x0010;
 	TIMER_A2->CCR[0] = (period - 1);
 	TIMER_A2->EX0 = 0x0005;
@@ -350,16 +367,6 @@ void testtestmove(){
 	  Clock_Delay1us(10);
 
 	  P7->DIR = 0x00;
-		printf("%d\n" , left_count);
-
-		DC_Motor_Interface(2, 500, 100);
-		DC_Motor_Interface(5, 500, 100);
-		DC_Motor_Interface(1, 400, 400);
-
-		if(left_count > 30){
-			DC_Motor_Interface(1, 0, 0);
-		}
-/*
     int i;
     for(i = 0; i < 10000; i++){
       sensor = P7->IN & 0x10;
@@ -368,14 +375,13 @@ void testtestmove(){
 	      break;
 	    }
 	    Clock_Delay1us(1);
-	  } */
-		/*
-		//turn off sequence
+	  } 
+
 	  P5->OUT &= ~0x08;
 	  P9->OUT &= ~0x04;
-	  Clock_Delay1ms(10); */
-/*
-		if(i > 200){
+	  Clock_Delay1ms(10); 
+
+		if(i > 700){
 			DC_Motor_Interface(2, 0, 0);
 			DC_Motor_Interface(4, 0, 0);
 			DC_Motor_Interface(1, 500, 500);
@@ -386,7 +392,7 @@ void testtestmove(){
 			DC_Motor_Interface(5, 0, 0);
 			DC_Motor_Interface(1, 700, 700);
 			systick_wait1ms();
-		} */
+		}
 	}
 }
 
@@ -424,8 +430,65 @@ uint32_t get_left_rpm(){
 	return 2000000 / period_left;
 }
 
+int is_IR_sensor_discharge(int n){
+	if(n < 1 || n > 8){
+		return -1;
+	}
+	return P7->IN & (1 << (n-1));
+}
+
+void IR_sensor_discharge_time_table(){
+	int flag[8];
+	int i = 0;
+	int j = 0;
+	while(i < 8){
+		flag[i] = -1;
+		++i;
+	}
+	
+	P5->OUT |= 0x08;
+	P9->OUT |= 0x04;
+
+	P7->DIR = 0xFF;
+
+	P7->OUT = 0xFF;
+
+	Clock_Delay1us(10);
+
+	P7->DIR = 0x00;
+
+	for(i = 0; i < 10000; ++i){
+		for(j = 0; j < 8; ++j){
+			if(flag[j] == -1){
+				int sensor = is_IR_sensor_discharge(j);
+				if(!sensor){
+					flag[j] = i;
+					printf("constant: %d\n" . i);
+					if(i < 700){
+						IRinfo[j] = 0; //white
+					}
+					else if(i < 1500){
+						IRinfo[j] = 1; //black
+					}
+					else{
+						IRinfo[j] = -1; //error
+				  }
+				}
+			}
+		}
+	}
+
+	Clock_Delay1us(1);
+	P5->OUT &= ~0x08;
+	P9->OUT &= ~0x04;
+}
+
 void main(void)
 {
 	InitF();
-	testtestmove();
+	//initial speed
+	DC_Motor_Interface(1, 1000, 1000);
+	while(1){
+		IR_sensor_discharge_time_table();
+	}
 }	
