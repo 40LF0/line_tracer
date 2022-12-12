@@ -3,6 +3,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define IR_Sensor_start_index 0 // sensor number 0 is not working
+#define IR_Sensor_end_index 7
+#define default_speed 100
+#define speed_delta	150
+
 /**
  * main.c
  */
@@ -135,7 +140,11 @@ void InitF(){
 	systick_init();
 	motor_init();
 	IRsensor_init();
+<<<<<<< HEAD
   //TimerA2_Init(task, 10000);
+=======
+    //TimerA2_Init(task, 10000);
+>>>>>>> be4f4d3cdae2227474829fcffde36048bbe6d4f6
 
 	//timer_A3_capture_init();
 	InitFlag=1;
@@ -327,28 +336,40 @@ void task(){
 //MOTOR WORK DONE HERE
 	//DC_Motor_Interface(, , ,);
 	int k = 0;
-	for(k = 0; k < 8; ++k){
+	for(k = IR_Sensor_start_index; k <= IR_Sensor_end_index; k++){
 		if(IRinfo[k] == 1){
 			break;
 		}
 	}
+
+	int active_start = k;
+	int active_end = IR_Sensor_end_index;
+
 	int j = 0; 
-	for(j = k + 1; j < 8; ++j){
+	for(j = active_start + 1; j <= IR_Sensor_end_index; j++){
 		if(IRinfo[j] == 0){
 			break;
 		}
+		active_end++;
 	}
-	if(j == 0){
-		j = 8;	
-	}
-	if((j-k) >= 4){
+	//printf("%d %d\n",active_start,active_end);
+
+
+	if((active_end-active_start) >= 4){
 		//need to stop
 		//exit(1);
 	}
 	else{
-    int a = j- 4;
-		int b = k - 3;
-		DC_Motor_Interface(1, 500 + 150*a, 500 - 150*b);
+		// default active_start position is 3
+		// if active_start position leans to the left, 
+		// left speed should be faster 
+		int left_speed_change = speed_delta*(3-active_start);
+		// default active_end position is 4
+		// if active_end position leans to the right, 
+		// right speed should be faster 
+		int right_speed_change = speed_delta*(active_end-4);
+
+		DC_Motor_Interface(1, default_speed+left_speed_change, default_speed+right_speed_change);
 	}
 }
 
@@ -461,10 +482,16 @@ void IR_sensor_discharge_time_table(){
 		flag[i] = -1;
 		++i;
 	}
+<<<<<<< HEAD
 	
 	for(i = 0; i < 8; i++){
 		P5->OUT |= 0x08;
 		P9->OUT |= 0x04;
+=======
+
+	P5->OUT |= 0x08;
+	P9->OUT |= 0x04;
+>>>>>>> be4f4d3cdae2227474829fcffde36048bbe6d4f6
 
 		P7->DIR = 0xFF;
 
@@ -474,9 +501,16 @@ void IR_sensor_discharge_time_table(){
 
 		P7->DIR = 0x00;
 
+<<<<<<< HEAD
 		for(j = 0; j < 1000; j++){
 			if(flag[i] == -1){
 				sensor = P7->IN & (1 << (i));
+=======
+	for(i = 0; i < 10000; ++i){
+		for(j = IR_Sensor_start_index; j <= IR_Sensor_end_index; j++){
+			if(flag[j] == -1){
+				int sensor = is_IR_sensor_discharge(j);
+>>>>>>> be4f4d3cdae2227474829fcffde36048bbe6d4f6
 				if(!sensor){
 					flag[i] = j;
 					break;
@@ -485,21 +519,30 @@ void IR_sensor_discharge_time_table(){
 			Clock_Delay1us(1);
 		}
 	}
+<<<<<<< HEAD
 
 	for(i = 0; i < 7; i++){
+=======
+	for(i = IR_Sensor_start_index; i <= IR_Sensor_end_index; i++){
+>>>>>>> be4f4d3cdae2227474829fcffde36048bbe6d4f6
 		if(flag[i] < 700){
 			IRinfo[i] = 0; //white
 		}
-		else if(flag[i] < 1500){
+		else if(flag[i] < 3000){
 			IRinfo[i] = 1; //black
 		}
 		else{
 			IRinfo[i] = -1; //error
 		}
 	}
+<<<<<<< HEAD
 
 	for(i = 0; i < 8; i++){
 		printf("%d " , flag[i]);
+=======
+	for(i = IR_Sensor_start_index; i <= IR_Sensor_end_index; i++){
+		printf("%d " , IRinfo[i]);
+>>>>>>> be4f4d3cdae2227474829fcffde36048bbe6d4f6
 	}
 
 	printf("\n");
@@ -515,6 +558,11 @@ void main(void)
 	//initial speed
 	DC_Motor_Interface(1, 1000, 1000);
 	while(1){
+<<<<<<< HEAD
 		testtestmove();
+=======
+		IR_sensor_discharge_time_table();
+		task();
+>>>>>>> be4f4d3cdae2227474829fcffde36048bbe6d4f6
 	}
 }	
