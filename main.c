@@ -13,6 +13,7 @@ int milisec;
 int sec;
 int InitFlag;
 int sensorVal;
+int count = 0;
 void (*TimerA2Task)(void);
 void task();
 
@@ -341,14 +342,21 @@ void task(){
 	if(j == 0){
 		j = 8;	
 	}
-	if((j-k) >= 4){
+
+	if((j-k) >= 6){
 		//need to stop
-		//exit(1);
+		count += 1;
+		if(count > 3){
+		DC_Motor_Interface(1,0,0);
+		while(1){
+
+		}}
 	}
 	else{
+		count = 0;
     int a = j- 4;
 		int b = k - 3;
-		DC_Motor_Interface(1, 500 + 150*a, 500 - 150*b);
+		DC_Motor_Interface(1, 500 + 120*a, 500 - 120*b);
 	}
 }
 
@@ -384,15 +392,12 @@ void testtestmove(){
 			Clock_Delay1us(10);
 
 			P7->DIR = 0x00;
-			int i;
-			for(i = 0; i < 10000; i++){
-				if(flag[j] == -1){
-					sensor = P7->IN & (1<<(j));
-					if(!sensor){
-						flag[j] = i;
-					  printf("TC: %d ", flag[j]);
-						break;
-					}
+
+			for(i = 0; i < 2000; i++){
+				sensor = P7->IN & (1<<(j));
+				if(!sensor){
+					flag[j] = i;
+					break;
 				}
 				Clock_Delay1us(1);
 			} 
@@ -403,20 +408,21 @@ void testtestmove(){
 
 		}
 
+		for(i = 0; i < 8; ++i){
+			if(flag[i] < 700){
+				IRinfo[i] = 0; //white
+			}
+			else if(flag[i] < 1500){
+				IRinfo[i] = 1; //black
+			}
+			else{
+				IRinfo[i] = -1;
+			}
+			printf("%d " ,IRinfo[i]);
+		}
 		printf("\n");
 
-		if(i > 700){
-			DC_Motor_Interface(2, 0, 0);
-			DC_Motor_Interface(4, 0, 0);
-			DC_Motor_Interface(1, 500, 500);
-			systick_wait1ms();
-		}
-		else{
-			DC_Motor_Interface(3, 0, 0);
-			DC_Motor_Interface(5, 0, 0);
-			DC_Motor_Interface(1, 700, 700);
-			systick_wait1ms();
-		}
+		task();
 	}
 }
 
