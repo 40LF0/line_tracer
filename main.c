@@ -135,9 +135,9 @@ void InitF(){
 	systick_init();
 	motor_init();
 	IRsensor_init();
-  TimerA2_Init(task, 10000);
+  //TimerA2_Init(task, 10000);
 
-	timer_A3_capture_init();
+	//timer_A3_capture_init();
 	InitFlag=1;
 }
 
@@ -343,7 +343,7 @@ void task(){
 	}
 	if((j-k) >= 4){
 		//need to stop
-		exit(1);
+		//exit(1);
 	}
 	else{
     int a = j- 4;
@@ -365,12 +365,12 @@ void TimerA2_Init(void(*task)(void), uint16_t period){
 
 void testtestmove(){
 	Clock_Init48MHz();
-	systick_init();
-	motor_init();
-	IRsensor_init();
+	int i = 0;
+	int j = 0;
 
 	int sensor;
 	while(1){
+		for(j = 0; j < 8; j++){
 		P5->OUT |= 0x08;
 	  P9->OUT |= 0x04;
     P7->DIR = 0xFF;
@@ -381,9 +381,9 @@ void testtestmove(){
 	  P7->DIR = 0x00;
     int i;
     for(i = 0; i < 10000; i++){
-      sensor = P7->IN & 0x10;
+      sensor = P7->IN & (1<<(j));
 	    if(!sensor){
-	      printf("Timing Constant: %d\n", i);
+	      printf("TC: %d ", i);
 	      break;
 	    }
 	    Clock_Delay1us(1);
@@ -393,6 +393,9 @@ void testtestmove(){
 	  P9->OUT &= ~0x04;
 	  Clock_Delay1ms(10); 
 
+		}
+
+		printf("\n");
 		if(i > 700){
 			DC_Motor_Interface(2, 0, 0);
 			DC_Motor_Interface(4, 0, 0);
@@ -443,45 +446,47 @@ uint32_t get_left_rpm(){
 }
 
 int is_IR_sensor_discharge(int n){
-	if(n < 1 || n > 8){
+	if(n < 0 || n > 7){
 		return -1;
 	}
-	return P7->IN & (1 << (n-1));
+	return P7->IN & (1 << (n));
 }
 
 void IR_sensor_discharge_time_table(){
 	int flag[8];
 	int i = 0;
 	int j = 0;
+	int sensor = 0;
 	while(i < 8){
 		flag[i] = -1;
 		++i;
 	}
-
-	flag[0] = 650;
 	
-	P5->OUT |= 0x08;
-	P9->OUT |= 0x04;
+	for(i = 0; i < 8; i++){
+		P5->OUT |= 0x08;
+		P9->OUT |= 0x04;
 
-	P7->DIR = 0xFF;
+		P7->DIR = 0xFF;
 
-	P7->OUT = 0xFF;
+		P7->OUT = 0xFF;
 
-	Clock_Delay1us(10);
+		Clock_Delay1us(10);
 
-	P7->DIR = 0x00;
+		P7->DIR = 0x00;
 
-	for(i = 0; i < 10000; ++i){
-		for(j = 1; j < 8; ++j){
-			if(flag[j] == -1){
-				int sensor = is_IR_sensor_discharge(j);
+		for(j = 0; j < 1000; j++){
+			if(flag[i] == -1){
+				sensor = P7->IN & (1 << (i));
 				if(!sensor){
-					flag[j] = i;
+					flag[i] = j;
+					break;
 				}
 			}
+			Clock_Delay1us(1);
 		}
 	}
-	for(i = 0; i < 7; ++i){
+
+	for(i = 0; i < 7; i++){
 		if(flag[i] < 700){
 			IRinfo[i] = 0; //white
 		}
@@ -492,6 +497,7 @@ void IR_sensor_discharge_time_table(){
 			IRinfo[i] = -1; //error
 		}
 	}
+
 	for(i = 0; i < 8; i++){
 		printf("%d " , flag[i]);
 	}
@@ -509,6 +515,6 @@ void main(void)
 	//initial speed
 	DC_Motor_Interface(1, 1000, 1000);
 	while(1){
-		IR_sensor_discharge_time_table();
+		testtestmove();
 	}
 }	
