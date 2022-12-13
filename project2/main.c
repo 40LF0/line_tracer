@@ -16,6 +16,7 @@ int sensorVal;
 int count = 0;
 void (*TimerA2Task)(void);
 void task();
+void timer_A3_capture_init();
 
 uint16_t first_left;
 uint16_t first_right;
@@ -87,29 +88,6 @@ void pwm_init34(uint16_t period, uint16_t duty3, uint16_t duty4){
 	P2->SEL1 &= ~0xC0;
 }
 
-void systick_init(){
-	//processor clock is 48MHz
-	SysTick->LOAD = 0x00FFFFFF;
-	SysTick->CTRL = 0x00000005;
-}
-
-void systick_wait1ms(){
-	milisec++;
-	SysTick->LOAD = 0xFFFF;
-	SysTick->VAL = 0;
-	while((SysTick->CTRL & 0x00010000) == 0) {}
-	InitFlag=0;
-}
-
-void systick_wait1s(){
-	int i;
-	int count = 1000;
-	for(i = 0; i < count; ++i){
-		systick_wait1ms();
-	}
-	InitFlag=0;
-}
-
 void motor_init(void){
 	P3->SEL0 &= ~0xC0;
 	P3->SEL1 &= ~0xC0;
@@ -129,56 +107,34 @@ void motor_init(void){
 	pwm_init34(7500, 0, 0);
 }
 
+void IRsensor_init(){
+	P5->SEL0 &= ~0x08;
+	P5->SEL1 &= ~0x08;
+	P5->DIR |= 0x08;
+	P5->OUT &= ~0x08;
+
+	P9->SEL0 &= ~0x04;
+	P9->SEL1 &= ~0x04;
+	P9->DIR |= 0x04;
+	P9->OUT &= ~0x04;
+
+	P7->SEL0 &= ~0xFF;
+	P7->SEL1 &= ~0xFF;
+	P7->DIR &= ~0xFF;
+}
+
 void InitF(){
 	Clock_Init48MHz();
 	led_init();
 	switch_init();
-	systick_init();
 	motor_init();
 	IRsensor_init();
-  //TimerA2_Init(task, 10000);
+    //TimerA2_Init(task, 10000);
 
-	//timer_A3_capture_init();
+	timer_A3_capture_init();
 	InitFlag=1;
 }
 
-void delay_brightness(){
-	int delay = 1;
-	while(1){
-		if(delay >= 10000)
-			delay = 1;
-
-		turn_on_led(0x02);
-		Clock_Delay1ms(10000-delay);
-		turn_off_led();
-		Clock_Delay1ms(delay);
-
-		delay+=100;
-	}
-	InitFlag=0;
-}
-
-void display_time(){
-	int sw1; //switch declaration
-	if (InitFlag == 1){
-		systick_wait1ms();
-
-		while(1){
-			sw1 = P1->IN & 0x02;
-
-			if(milisec>1000){
-				sec++;
-				milisec = 0;
-			}
-			//if(!sw1) -> switch pressed
-			if(!sw1){
-				printf("current time = %ds %dms\n" , sec, milisec);
-			}
-			systick_wait1ms();
-		}
-	}
-	InitFlag=0;
-}
 
 void motor_example(){
 	//move forward
@@ -209,86 +165,7 @@ void motor_speedcontrol(){
 	}
 }
 
-void IRsensor_init(){
-	P5->SEL0 &= ~0x08;
-	P5->SEL1 &= ~0x08;
-	P5->DIR |= 0x08;
-	P5->OUT &= ~0x08;
 
-	P9->SEL0 &= ~0x04;
-	P9->SEL1 &= ~0x04;
-	P9->DIR |= 0x04;
-	P9->OUT &= ~0x04;
-
-	P7->SEL0 &= ~0xFF;
-	P7->SEL1 &= ~0xFF;
-	P7->DIR &= ~0xFF;
-}
-
-void use_IRSensor(){
-
-	int sensor;
-
-	while(1){
-		P5->OUT |= 0x08;
-		P9->OUT |= 0x04;
-
-		P7->DIR = 0xFF;
-		P7->OUT = 0xFF;
-
-		Clock_Delay1us(10);
-
-		P7->DIR = 0x00;
-
-		Clock_Delay1us(1000);
-
-		sensor = P7->IN & 0x10;
-
-		if(sensor){
-			P2->OUT |= 0x01;
-		}
-		else
-			P2->OUT &= ~0x07;
-
-		P5->OUT &= ~0x08;
-		P9->OUT &= ~0x04;
-
-		printf("testing...\n");
-
-		Clock_Delay1ms(10);
-	}
-}
-
-void wait_constantIR(){
-	int sensor;
-	while(1){
-		P5->OUT |= 0x08;
-		P9->OUT |= 0x04;
-
-		P7->DIR = 0xFF;
-		P7->OUT = 0xFF;
-
-		Clock_Delay1us(10);
-
-		P7->DIR = 0x00;
-
-		int i;
-		for(i = 0; i < 10000; i++){
-			sensor = P7->IN & 0x10;
-			if(!sensor){
-				printf("Timing Constant: %d\n", i);
-				sensorVal = i;
-				break;
-			}
-			Clock_Delay1us(1);
-		}
-
-		P5->OUT &= ~0x08;
-	  P9->OUT &= ~0x04;
-
-		Clock_Delay1ms(10);
-	}
-}
 
 void DC_Motor_Interface(int flag, uint16_t leftDuty, uint16_t rightDuty){
 	if(flag == 1){
@@ -324,40 +201,66 @@ void TA2_0_IRQHandler(){
 	(*TimerA2Task)();
 }
 
-void task(){
+void robot_task(){
 //MOTOR WORK DONE HERE
 	//DC_Motor_Interface(, , ,);
+
+	// Get first black index -> k
 	int k = 0;
-	for(k = 0; k < 8; ++k){
+	for(k = 0; k < 8; k++){
 		if(IRinfo[k] == 1){
 			break;
 		}
 	}
+
+	//Get last black index + 1 -> j
 	int j = 0; 
-	for(j = k + 1; j < 8; ++j){
+	for(j = k + 1; j < 8; j++){
 		if(IRinfo[j] == 0){
 			break;
 		}
 	}
-	if(j == 0){
-		j = 8;	
-	}
 
-	if((j-k) >= 6){
-		//need to stop
+
+	//First, we have to figure out 
+	//length of the black 
+	int length = j-k;
+	if(k == 8){
+		// there is no black
+		length = 0;
+	}
+	// in normal case, sensor #3,#4 is black
+	int a = j- 5;
+	int b = k - 3;
+
+	if(length >=6){
 		count += 1;
 		if(count > 3){
-		DC_Motor_Interface(1,0,0);
-		while(1){
-
-		}}
+			DC_Motor_Interface(1,0,0);
+			while(1){
+				printf("spinning\n");
+			}
+		}
 	}
 	else{
 		count = 0;
-    int a = j- 4;
-		int b = k - 3;
-		DC_Motor_Interface(1, 500 + 120*a, 500 - 120*b);
+		if(length == 0){
+			return;
+			// i will not change motor control..
+			// no black is on..
+			// this logic is for old road.
+		}
+		else if(length == 4){
+
+		}
+		else if(length == 5){
+
+		}
 	}
+		
+
+	DC_Motor_Interface(1, 500 + 120*a, 500 - 120*b);
+
 }
 
 void TimerA2_Init(void(*task)(void), uint16_t period){
@@ -371,7 +274,38 @@ void TimerA2_Init(void(*task)(void), uint16_t period){
 	TIMER_A2->CTL |= 0x0014;
 }
 
-void testtestmove(){
+void rotate_to_left_90(){
+	DC_Motor_Interface(1, 0, 0);
+	left_count = 0;
+	DC_Motor_Interface(3, 0, 0);
+	DC_Motor_Interface(4, 0, 0);
+	DC_Motor_Interface(1, 500, 500);
+	while(left_count < 180){
+
+	}
+	DC_Motor_Interface(1, 0, 0);
+	DC_Motor_Interface(2, 0, 0);
+	DC_Motor_Interface(4, 0, 0);
+	DC_Motor_Interface(1, 100, 100);
+
+}
+void rotate_to_right_90(){
+	DC_Motor_Interface(1, 0, 0);
+	left_count = 0;
+	DC_Motor_Interface(2, 0, 0);
+	DC_Motor_Interface(5, 0, 0);
+	DC_Motor_Interface(1, 500, 500);
+	while(left_count < 180){
+
+	}
+	DC_Motor_Interface(1, 0, 0);
+	DC_Motor_Interface(2, 0, 0);
+	DC_Motor_Interface(4, 0, 0);
+	DC_Motor_Interface(1, 100, 100);
+
+}
+
+void robot(){
 	int i = 0;
 	int j = 0;
 	int sensor = 0;
@@ -422,7 +356,7 @@ void testtestmove(){
 		}
 		printf("\n");
 
-		task();
+		robot_task();
 	}
 }
 
@@ -456,80 +390,12 @@ void TA3_N_IRQHandler(){
 	left_count++;
 }
 
-uint32_t get_left_rpm(){
-	return 2000000 / period_left;
-}
-
-int is_IR_sensor_discharge(int n){
-	if(n < 0 || n > 7){
-		return -1;
-	}
-	return P7->IN & (1 << (n));
-}
-
-void IR_sensor_discharge_time_table(){
-	int flag[8];
-	int i = 0;
-	int j = 0;
-	int sensor = 0;
-	while(i < 8){
-		flag[i] = -1;
-		++i;
-	}
-	
-	for(i = 0; i < 8; i++){
-		P5->OUT |= 0x08;
-		P9->OUT |= 0x04;
-
-		P7->DIR = 0xFF;
-
-		P7->OUT = 0xFF;
-
-		Clock_Delay1us(10);
-
-		P7->DIR = 0x00;
-
-		for(j = 0; j < 1000; j++){
-			if(flag[i] == -1){
-				sensor = P7->IN & (1 << (i));
-				if(!sensor){
-					flag[i] = j;
-					break;
-				}
-			}
-			Clock_Delay1us(1);
-		}
-	}
-
-	for(i = 0; i < 7; i++){
-		if(flag[i] < 700){
-			IRinfo[i] = 0; //white
-		}
-		else if(flag[i] < 1500){
-			IRinfo[i] = 1; //black
-		}
-		else{
-			IRinfo[i] = -1; //error
-		}
-	}
-
-	for(i = 0; i < 8; i++){
-		printf("%d " , flag[i]);
-	}
-
-	printf("\n");
-
-	Clock_Delay1us(1);
-	P5->OUT &= ~0x08;
-	P9->OUT &= ~0x04;
-}
 
 void main(void)
 {
 	InitF();
 	//initial speed
 	DC_Motor_Interface(1, 1000, 1000);
-	while(1){
-		testtestmove();
-	}
+	robot();
+
 }	
