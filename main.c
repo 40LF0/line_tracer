@@ -455,7 +455,7 @@ void robot(){
 	}
 
 	while(1){
-	        for(j = 0; j < 8; j++){
+
 	            P5->OUT |= 0x08;
 	            P9->OUT |= 0x04;
 	            P7->DIR = 0xFF;
@@ -464,33 +464,19 @@ void robot(){
 	            Clock_Delay1us(10);
 
 	            P7->DIR = 0x00;
+				Clock_Delay1us(700);
+				sensor = P7->IN;
+				Clock_Delay1us(1300);
 
-	            for(i = 0; i < 2000; i++){
-	                sensor = P7->IN & (1<<(j));
-	                if(!sensor){
-	                    flag[j] = i;
-	                    break;
-	                }
-	                Clock_Delay1us(1);
-	            }
 
 	            P5->OUT &= ~0x08;
 	            P9->OUT &= ~0x04;
 	            Clock_Delay1ms(10);
 
-	        }
+				for(i = 0; i < 8; i++){
+					IRinfo[i] = (sensor >> i ) & 1;
+				}
 
-	        for(i = 0; i < 8; ++i){
-	            if(flag[i] < 700){
-	                IRinfo[i] = 0; //white
-	            }
-	            else if(flag[i] < 1500){
-	                IRinfo[i] = 1; //black
-	            }
-	            else{
-	                IRinfo[i] = -1;
-	            }
-	        }
 					robot_task();
 	}
 }
