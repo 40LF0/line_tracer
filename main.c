@@ -249,18 +249,18 @@ int get_prev(){
 
 //prev length >= 4 && 0 or 7th sensor is black --> 
 void no_road(){
+	printf("noroad\n");
 	int prev_length = get_prev();
 	if(prev_length >= 4){
 		if(prevSensor[7] == 1){
-			rotate_to_left_90();
+			rotate_to_left(90);
 			//jikjin jjogem?
-			DC_Motor_Interface(1,2000,2000);
 			Clock_Delay1ms(250);
+			return;
 		}
-		if(prevSensor[0] == 1){
-			rotate_to_right_90();
+		else if(prevSensor[0] == 1){
+			rotate_to_right(90);
 			//jikjin??
-			DC_Motor_Interface(1,2000,2000);
 			Clock_Delay1ms(250);
 		}
 	}
@@ -312,8 +312,8 @@ void robot_task(){
 	int a = j- 5;
 	int b = k - 3;
 
-	int speed = 5000;
-	int shift_delta = 400;
+	int speed = 1000;
+	int shift_delta = 175;
 	//DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b)
 	
 	
@@ -395,9 +395,6 @@ void robot_task(){
 
 		}
 	}*/
-		
-
-	DC_Motor_Interface(1, 500 + 120*a, 500 - 120*b);
 
 }
 
@@ -412,13 +409,13 @@ void TimerA2_Init(void(*task)(void), uint16_t period){
 	TIMER_A2->CTL |= 0x0014;
 }
 
-void rotate_to_left_90(){
+void rotate_to_left(int data){
 	DC_Motor_Interface(1, 0, 0);
 	left_count = 0;
 	DC_Motor_Interface(3, 0, 0);
 	DC_Motor_Interface(4, 0, 0);
 	DC_Motor_Interface(1, 2000, 2000);
-	while(left_count < 180){
+	while(left_count < data * 2){
 
 	}
 	DC_Motor_Interface(1, 0, 0);
@@ -427,13 +424,13 @@ void rotate_to_left_90(){
 	DC_Motor_Interface(1, 300, 300);
 
 }
-void rotate_to_right_90(){
+void rotate_to_right(int data){
 	DC_Motor_Interface(1, 0, 0);
 	left_count = 0;
 	DC_Motor_Interface(2, 0, 0);
 	DC_Motor_Interface(5, 0, 0);
 	DC_Motor_Interface(1, 2000, 2000);
-	while(left_count < 180){
+	while(left_count < data * 2){
 
 	}
 	DC_Motor_Interface(1, 0, 0);
@@ -455,7 +452,7 @@ void robot(){
 	}
 
 	while(1){
-
+	        for(j = 0; j < 8; j++){
 	            P5->OUT |= 0x08;
 	            P9->OUT |= 0x04;
 	            P7->DIR = 0xFF;
@@ -464,19 +461,37 @@ void robot(){
 	            Clock_Delay1us(10);
 
 	            P7->DIR = 0x00;
-				Clock_Delay1us(700);
-				sensor = P7->IN;
-				Clock_Delay1us(1300);
 
+	            for(i = 0; i < 2000; i++){
+	                sensor = P7->IN & (1<<(j));
+	                if(!sensor){
+	                    flag[j] = i;
+	                    break;
+	                }
+	                Clock_Delay1us(1);
+	            }
 
 	            P5->OUT &= ~0x08;
 	            P9->OUT &= ~0x04;
 	            Clock_Delay1ms(10);
 
-				for(i = 0; i < 8; i++){
-					IRinfo[i] = (sensor >> i ) & 1;
-				}
+	        }
 
+					for(i = 0; i < 8; i++){
+						prevSensor[i] = IRinfo[i];
+					}
+
+	        for(i = 0; i < 8; ++i){
+	            if(flag[i] < 700){
+	                IRinfo[i] = 0; //white
+	            }
+	            else if(flag[i] < 1500){
+	                IRinfo[i] = 1; //black
+	            }
+	            else{
+	                IRinfo[i] = -1;
+	            }
+	        }
 					robot_task();
 	}
 }
