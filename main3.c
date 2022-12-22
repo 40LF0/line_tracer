@@ -312,11 +312,13 @@ void robot_task(){
 	int a = j- 5;
 	int b = k - 3;
 
+	float shift_cen = (k+j-1)/2
+
 	int speed = 1000;
 	int shift_delta = 175;
 	//DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b)
 	
-	
+	float shift_amount;
 	switch(length){
 		case 0:
 			count = 0;
@@ -325,6 +327,7 @@ void robot_task(){
 
 		case 1:
 			count = 0;
+<<<<<<< HEAD
 
 			if(IRinfo[0] == 1){
 				no_road();
@@ -336,41 +339,69 @@ void robot_task(){
 			}
 
 			DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b);
+=======
+			if(shift_cen >= 3 && shift_cen <= 4){
+				shift_amount = 0;
+			}
+			else{
+				shift_amount = 3.5 - shift_cen;
+			}
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);
+>>>>>>> ab9b2a3506f0f2df83c9799186d7d6b060d07708
 			break;
 
 		case 2:
 			count = 0;
-			DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b);
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);
 			break;
 
 		case 3:
 			count = 0;
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);
 			break;
 
 		case 4:
 			count = 0;
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);
 			break;
 
 		case 5:
 			count = 0;
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);
 			break;
 
 		case 6:
 			count++;
-			if(count > 10000)
+			if(count > 10000){
 				DC_Motor_Interface(1, 0, 0);
+				break;
+			}
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);	
 			break;
 
 		case 7:
 			count++;
-			if(count > 10000)
+			if(count > 10000){
 				DC_Motor_Interface(1, 0, 0);
+				break;
+			}
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);	
 			break;
 
 		case 8:
 			count++;
-			if(count > 10000)
+			if(count > 10000){
 				DC_Motor_Interface(1, 0, 0);
+				break;
+			}
+			shift_amount = 3.5 - shift_cen;
+			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);	
 			break;
 
 		default:
