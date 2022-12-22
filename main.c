@@ -325,6 +325,16 @@ void robot_task(){
 
 		case 1:
 			count = 0;
+
+			if(IRinfo[0] == 1){
+				no_road();
+				break;
+			}
+			else if(IRinfo[7] == 1){
+				no_road();
+				break;
+			}
+
 			DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b);
 			break;
 
