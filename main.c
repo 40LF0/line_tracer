@@ -327,19 +327,6 @@ void robot_task(){
 
 		case 1:
 			count = 0;
-<<<<<<< HEAD
-
-			if(IRinfo[0] == 1){
-				no_road();
-				break;
-			}
-			else if(IRinfo[7] == 1){
-				no_road();
-				break;
-			}
-
-			DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b);
-=======
 			if(shift_cen >= 3 && shift_cen <= 4){
 				shift_amount = 0;
 			}
@@ -347,7 +334,6 @@ void robot_task(){
 				shift_amount = 3.5 - shift_cen;
 			}
 			DC_Motor_Interface(1, speed - shift_delta * shift_amount, speed + shift_delta * shift_amount);
->>>>>>> ab9b2a3506f0f2df83c9799186d7d6b060d07708
 			break;
 
 		case 2:
@@ -407,7 +393,6 @@ void robot_task(){
 		default:
 
 	}
-
 	/*
 	if(length >=6){
 		count += 1;
