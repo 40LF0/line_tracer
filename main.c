@@ -20,6 +20,11 @@ int sec;
 int count = 0; //global counter to indicate motor stoppage
 int led_state = 0;
 int flag[8];
+
+int left_on;
+int right_on;
+int check_var = 0;
+
 void (*TimerA2Task)(void);
 void task();
 void timer_A3_capture_init();
@@ -136,6 +141,8 @@ void InitF(){
     //TimerA2_Init(task, 10000);
 
     timer_A3_capture_init();
+		right_on = 0;
+		left_on = 0;
 }
 
 
@@ -252,20 +259,19 @@ int get_prev(){
 void no_road(){
     int prev_length = get_prev();
     if(prev_length >= 3){
-        if(prevSensor[7] == 1){
+        if(right_on == 1){
             rotate_to_left(90);
             //jikjin jjogem?
             Clock_Delay1ms(100);
-						return;
         }
-        else if(prevSensor[0] == 1){
+        else if(left_on == 1){
             rotate_to_right(90);
             //jikjin?
             Clock_Delay1ms(100);
         }
     }
-    else
-        return;
+		left_on = 1;
+		right_on = 1;
 }
 
 void robot_task(){
@@ -289,7 +295,7 @@ void robot_task(){
 		led_state = 0;
 		
 		for(i = 0; i < 8; i++){
-			printf("%d " , IRinfo[i]);
+			printf("%d " , flag[i]);
 		}
 		printf("\n");
 
@@ -338,25 +344,31 @@ void robot_task(){
 
         case 1:
             count = 0;
-
-            if(IRinfo[0] == 1){
+						if(sensor_count == 1){
+							if(IRinfo[0] == 1){
                 no_road();
                 break;
-            }
-            else if(IRinfo[7] == 1){
+							}
+							else if(IRinfo[7] == 1){
                 no_road();
                 break;
-            }
+							}
+						}
 						
-						if(j == 3 || j == 4){
+						if(IRinfo[3] == 1 || IRinfo[4] == 1){
 							a = 0;
 							b = 0;
+							reset_sensor_check();
 						}
+
             DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b);
             break;
 
         case 2:
             count = 0;
+						sensor_check();
+
+						/*
 
 						if(IRinfo[0] == 1){
                 no_road();
@@ -365,37 +377,46 @@ void robot_task(){
             else if(IRinfo[7] == 1){
                 no_road();
                 break;
-            }
-						
+						}*/
+
+						if(IRinfo[3] == 1 || IRinfo[4] == 1){
+							reset_sensor_check();
+						}	
             DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b);
             break;
 
         case 3:
             count = 0;
+						sensor_check();
             break;
 
         case 4:
             count = 0;
+						sensor_check();
             break;
 
         case 5:
             count = 0;
+						sensor_check();
             break;
 
         case 6:
             count++;
+						sensor_check();
             if(count > 10000)
                 DC_Motor_Interface(1, 0, 0);
             break;
 
         case 7:
             count++;
+						sensor_check();
             if(count > 10000)
                 DC_Motor_Interface(1, 0, 0);
             break;
 
         case 8:
             count++;
+						sensor_check();
             if(count > 10000)
                 DC_Motor_Interface(1, 0, 0);
             break;
@@ -477,6 +498,22 @@ void rotate_to_right(int data){
 
 }
 
+void sensor_check(){
+	if(IRinfo[0] == 1 || IRinfo[1] == 1)
+		left_on = 1;
+	if(IRinfo[6] == 1 || IRinfo[7] == 1)
+		right_on = 1;
+}
+
+void reset_sensor_check(){
+	check_var++;
+	if(check_var > 1){
+		left_on = 0;
+		right_on = 0;
+		check_var = 0;
+	}
+}
+
 void robot(){
     int i = 0;
     int j = 0;
@@ -523,7 +560,7 @@ void robot(){
                 if(flag[i] < 450){
                     IRinfo[i] = 0; //white
                 }
-                else if(flag[i] < 1500){
+                else if(flag[i] < 3000){
                     IRinfo[i] = 1; //black
 										sensor_count++;
                 }
