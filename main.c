@@ -257,21 +257,21 @@ int get_prev(){
 
 //prev length >= 4 && 0 or 7th sensor is black --> 
 void no_road(){
-    int prev_length = get_prev();
-    if(prev_length >= 3){
+    //int prev_length = get_prev();
+    //if(prev_length >= 3){
         if(right_on == 1){
             rotate_to_left(90);
-            //jikjin jjogem?
-            Clock_Delay1ms(100);
+            Clock_Delay1ms(150);
+						right_on = 0;
+						left_on = 0;
         }
         else if(left_on == 1){
             rotate_to_right(90);
-            //jikjin?
-            Clock_Delay1ms(100);
+            Clock_Delay1ms(150);
+						right_on = 0;
+						left_on = 0;
         }
-    }
-		left_on = 1;
-		right_on = 1;
+    //}
 }
 
 void robot_task(){
@@ -294,11 +294,6 @@ void robot_task(){
 		
 		led_state = 0;
 		
-		for(i = 0; i < 8; i++){
-			printf("%d " , flag[i]);
-		}
-		printf("\n");
-
     for(i = 0; i < 8; i++){
         if(IRinfo[i] == 1)
             sensor_count++;
@@ -331,8 +326,8 @@ void robot_task(){
     int a = j- 5;
     int b = k - 3;
 
-    int speed = 1500;
-    int shift_delta = 700;
+    int speed = 1200;
+    int shift_delta = 550;
     //DC_Motor_Interface(1, speed + shift_delta * a, speed - shift_delta * b)
 
 
@@ -368,8 +363,6 @@ void robot_task(){
             count = 0;
 						sensor_check();
 
-						/*
-
 						if(IRinfo[0] == 1){
                 no_road();
                 break;
@@ -377,7 +370,7 @@ void robot_task(){
             else if(IRinfo[7] == 1){
                 no_road();
                 break;
-						}*/
+						}
 
 						if(IRinfo[3] == 1 || IRinfo[4] == 1){
 							reset_sensor_check();
@@ -472,14 +465,14 @@ void rotate_to_left(int data){
     left_count = 0;
     DC_Motor_Interface(3, 0, 0);
     DC_Motor_Interface(4, 0, 0);
-    DC_Motor_Interface(1, 2000, 2000);
+    DC_Motor_Interface(1, 1200, 1200);
     while(left_count < data * 2){
 
     }
     DC_Motor_Interface(1, 0, 0);
     DC_Motor_Interface(2, 0, 0);
     DC_Motor_Interface(4, 0, 0);
-    DC_Motor_Interface(1, 300, 300);
+    DC_Motor_Interface(1, 1000, 1000);
 
 }
 void rotate_to_right(int data){
@@ -487,14 +480,14 @@ void rotate_to_right(int data){
     left_count = 0;
     DC_Motor_Interface(2, 0, 0);
     DC_Motor_Interface(5, 0, 0);
-    DC_Motor_Interface(1, 2000, 2000);
+    DC_Motor_Interface(1, 1200, 1200);
     while(left_count < data * 2){
 
     }
     DC_Motor_Interface(1, 0, 0);
     DC_Motor_Interface(2, 0, 0);
     DC_Motor_Interface(4, 0, 0);
-    DC_Motor_Interface(1, 300, 300);
+    DC_Motor_Interface(1, 1000, 1000);
 
 }
 
@@ -560,7 +553,7 @@ void robot(){
                 if(flag[i] < 450){
                     IRinfo[i] = 0; //white
                 }
-                else if(flag[i] < 3000){
+                else if(flag[i] < 1500){
                     IRinfo[i] = 1; //black
 										sensor_count++;
                 }
